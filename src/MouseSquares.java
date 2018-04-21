@@ -1,12 +1,5 @@
-import java.awt.Color;
-import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -36,7 +29,6 @@ public class MouseSquares extends JFrame {
         edit.add(redo);
         edit.addSeparator();
         edit.add(list);
-        
         menu.add(program);
         menu.add(edit);
         
@@ -53,13 +45,13 @@ public class MouseSquares extends JFrame {
         
         undo.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                undo();
+                panel.undo(); 
             }
         });
         
         redo.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                redo();
+                panel.redo();
             }
         });
         
@@ -80,18 +72,9 @@ public class MouseSquares extends JFrame {
         add(panel);
         
     }
-    
-    
-    private void undo() {
-        
-    }
-    
-    private void redo() {
-        
-    }
-    
+
     private void listSquares() {
-        MouseSquaresDialog.showListDialog(this, panel.getList());
+        MouseSquaresDialog.showListDialog(this, panel.initilizeList());
      }
     
     public static void main(String[] args) {

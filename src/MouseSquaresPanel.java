@@ -1,116 +1,119 @@
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 @SuppressWarnings("serial")
-public class MouseSquaresPanel extends JPanel {
-    
+public class MouseSquaresPanel extends JPanel implements Command {
+
     private List<String> squares = new ArrayList<String>();
-    private int x, y;
+    private ArrayList<Rect> rectList = new ArrayList<Rect>();
+    private int x, y, count;
     private boolean left, right = false;
-    private String current;
-    
-    Stack<ActionEvent> redoStack = new Stack<ActionEvent>();
-    Stack<ActionEvent> undoStack = new Stack<ActionEvent>();
-    
+    private Rect rect;
+    Stack<Command> redoStack = new Stack<Command>();
+    Stack<Command> undoStack = new Stack<Command>();
+
     public MouseSquaresPanel() {
-        
+
         setSize(500, 500);
-        
+
+        count = 0;
+
         addMouseListener(new MouseAdapter() {
 
             public void mouseClicked(MouseEvent e) {
-                x = e.getX();
-                y = e.getY();
-                if (e.getButton() == MouseEvent.BUTTON1) {
+                if (SwingUtilities.isLeftMouseButton(e)) {
+                    count++;
+                    x = e.getX();
+                    y = e.getY();
                     left = true;
                     right = false;
                     repaint();
                 }
-                
-                if (e.getButton() == MouseEvent.BUTTON3) {
+
+                if (SwingUtilities.isRightMouseButton(e)) {
+                    count++;
                     left = false;
                     right = true;
                     repaint();
                 }
-                
+
             }
+
         });
-        
+
     }
-    
-    public List<String> getList() {
-        return squares;
-    }
-    
-    public Stack<ActionEvent> getUndo() {
+
+    public Stack<Command> getUndo() {
         return undoStack;
     }
-    
-    public Stack<ActionEvent> getRedo() {
+
+    public Stack<Command> getRedo() {
         return redoStack;
-    }
-    
-    private void drawSquare(Graphics g) {
-        g.setColor(Color.BLUE);
-        g.fillRect(x, y, 10, 10);
-        current = "BLUE"; 
-    }
-    
-    private void cycleColor(Graphics g) {
-//        if (current.equals("BLUE")) {
-//            g.setColor(Color.magenta);
-//            g.fillRect(x, y, 10, 10);
-//            current = "MAGENTA";
-//        }
-//        else if (current.equals("MAGENTA")) {
-//            g.setColor(Color.orange);
-//            g.fillRect(x, y, 10, 10);
-//            current = "ORANGE";
-//        }
-//        else if (current.equals("ORANGE")) {
-//            g.setColor(Color.red);
-//            g.fillRect(x, y, 10, 10);
-//            current = "RED";
-//        }
-//        else if (current.equals("RED")) {
-//            g.setColor(Color.yellow);
-//            g.fillRect(x, y, 10, 10);
-//            current = "YELLOW";
-//        }
-//        else {
-//            g.setColor(Color.blue);
-//            g.fillRect(x, y, 10, 10);
-//            current = "BLUE";
-//        }
-        
     }
 
     @Override
     public void paint(Graphics g) {
-//        if (left == true && right == false) {
-//            drawSquare(g);
-//        }
-//        
-//        if (left == false && right == true) {
-//            cycleColor(g);
-//        }
-        
-        drawSquare(g);
-        
-        if (current == null) {
-            
+        if (count == 0) {
+
+        }
+        else if (left == true && right == false) {
+            rect = new Rect(x, y, 10, 10, Color.blue);
+            rectList.add(rect);
         }
         else {
-            squares.add("[color=" + current + ",x=" + x + ",y=" + y + "]");
+            System.out.println("Got into right click, now calling setNextColor");
+            rect.setNextColor();
+            rectList.set(rectList.size() - 1, rect);
         }
 
+        drawSquares(g);
+
+    }
+
+    private void drawSquares(Graphics g) {
+        if (count != 0) {
+            for (int i = 0; i < rectList.size(); i++) {
+                rectList.get(i).draw(g);
+            }
+            
+        }
+
+    }
+    
+    public List<String> initilizeList() {
+        squares = new ArrayList<String>();
+        System.out.println(squares.size());
+        for (int i = 0; i < rectList.size(); i++) {
+            System.out.println("Number of times through loop: " + (i + 1));
+            squares.add("[color="
+                    + rectList.get(i).getColorString()
+                    + ",x=" + rectList.get(i).getX() + ",y="
+                    + rectList.get(i).getY() + "]");
+        }
+        return squares;
+    }
+
+    @Override
+    public Command execute() {
+        undoStack.push(this);
+        return null;
+    }
+
+    @Override
+    public Command undo() {
+        redoStack.push(this);
+        return this;
+    }
+    
+    public Command redo() {
+        return null;
     }
 
 }
